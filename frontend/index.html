@@ -1,33 +1,588 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Ankush CI/CD Project</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudFlow | DevOps CI/CD Project</title>
+    <meta name="description" content="A modern cloud-native application deployed using GitHub Actions, Docker, Amazon ECR and AWS EKS.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg: #080d19;
+            --surface: #101a2b;
+            --surface-light: #152238;
+            --text: #f4f7ff;
+            --muted: #9aa9bf;
+            --cyan: #4de2d0;
+            --blue: #6595ff;
+            --border: rgba(255,255,255,.09);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: Arial;
-            text-align: center;
-            background: #f0f4f8;
-            padding-top: 100px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            overflow-x: hidden;
         }
-        h1 {
-            color: #2563eb;
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 15% 15%, rgba(50,110,255,.16), transparent 40%),
+                radial-gradient(ellipse at 85% 40%, rgba(40,220,190,.10), transparent 38%);
+            pointer-events: none;
         }
-        .box {
-            background: white;
-            padding: 30px;
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(1120px, 90%);
             margin: auto;
-            width: 60%;
-            border-radius: 12px;
+        }
+
+        /* NAVBAR */
+
+        nav {
+            height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--cyan);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-button {
+            padding: 11px 19px;
+            border: 1px solid rgba(77,226,208,.5);
+            border-radius: 8px;
+            color: var(--cyan);
+            font-size: 13px;
+            font-weight: 700;
+            transition: .25s;
+        }
+
+        .nav-button:hover {
+            background: var(--cyan);
+            color: var(--bg);
+        }
+
+        /* HERO */
+
+        .hero {
+            padding: 105px 0 95px;
+            text-align: center;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 16px;
+            border: 1px solid rgba(77,226,208,.25);
+            background: rgba(77,226,208,.07);
+            border-radius: 30px;
+            color: var(--cyan);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: var(--cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--cyan);
+        }
+
+        h1 {
+            max-width: 900px;
+            margin: 30px auto 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(42px, 7vw, 76px);
+            line-height: 1.08;
+            letter-spacing: -4px;
+        }
+
+        h1 span {
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: auto;
+            color: var(--muted);
+            font-size: 17px;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 35px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            transition: .25s;
+        }
+
+        .btn-primary {
+            background: var(--cyan);
+            color: #07131a;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(77,226,208,.2);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.03);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--cyan);
+        }
+
+        /* STATS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 105px;
+        }
+
+        .stat-card {
+            padding: 26px;
+            text-align: center;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: rgba(16,26,43,.72);
+        }
+
+        .stat-card h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 30px;
+            color: var(--cyan);
+        }
+
+        .stat-card p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        /* SECTION */
+
+        .section {
+            padding-bottom: 105px;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 42px;
+        }
+
+        .section-heading .label {
+            color: var(--cyan);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .section-heading h2 {
+            margin-top: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(30px, 5vw, 43px);
+            letter-spacing: -1.5px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            margin-top: 12px;
+            font-size: 15px;
+        }
+
+        /* PIPELINE */
+
+        .pipeline {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+        }
+
+        .pipeline-card {
+            position: relative;
+            padding: 25px 16px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 13px;
+            text-align: center;
+            transition: .3s;
+        }
+
+        .pipeline-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(77,226,208,.5);
+        }
+
+        .pipeline-icon {
+            width: 53px;
+            height: 53px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 17px;
+            border-radius: 13px;
+            background: rgba(77,226,208,.09);
+            font-size: 25px;
+        }
+
+        .pipeline-card h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .pipeline-card p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* TECHNOLOGIES */
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .tech-card {
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: var(--surface);
+            transition: .3s;
+        }
+
+        .tech-card:hover {
+            background: var(--surface-light);
+            border-color: rgba(101,149,255,.5);
+            transform: translateY(-5px);
+        }
+
+        .tech-icon {
+            font-size: 29px;
+            margin-bottom: 18px;
+        }
+
+        .tech-card h3 {
+            font-size: 16px;
+            margin-bottom: 9px;
+        }
+
+        .tech-card p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* FOOTER */
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-content span {
+            color: var(--cyan);
+        }
+
+        @media(max-width: 800px) {
+            .pipeline {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tech-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            h1 {
+                letter-spacing: -2px;
+            }
+        }
+
+        @media(max-width: 520px) {
+            .hero {
+                padding: 75px 0;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                margin-bottom: 75px;
+            }
+
+            .pipeline {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="box">
-        <h1>Hello from Kubernetes!</h1>
-        <h2>My First CI/CD Project</h2>
-        <p>Deployed on AWS EKS using Docker and ECR.</p>
-        <p>Version: 1.0</p>
+
+    <div class="container">
+
+        <nav>
+            <a href="#" class="logo">Cloud<span>Flow.</span></a>
+
+            <div class="nav-links">
+                <a href="#pipeline">Pipeline</a>
+                <a href="#technologies">Technologies</a>
+                <a href="#about">About</a>
+            </div>
+
+            <a href="#pipeline" class="nav-button">Explore Project ↗</a>
+        </nav>
+
+        <header class="hero" id="about">
+
+            <div class="eyebrow">
+                <span class="dot"></span>
+                Cloud Native • Automated Deployment
+            </div>
+
+            <h1>
+                From Code to Cloud.<br>
+                <span>Fully Automated.</span>
+            </h1>
+
+            <p>
+                Building and deploying modern applications with a powerful
+                CI/CD pipeline. Every code change triggers an automated
+                journey from GitHub to Amazon EKS.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#pipeline" class="btn btn-primary">
+                    Explore CI/CD Pipeline →
+                </a>
+
+                <a href="#technologies" class="btn btn-secondary">
+                    Explore Technology Stack
+                </a>
+            </div>
+
+        </header>
+
+        <section class="stats">
+
+            <div class="stat-card">
+                <h2>01</h2>
+                <p>Automated CI/CD Pipeline</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>02</h2>
+                <p>Kubernetes Application Replicas</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>100%</h2>
+                <p>Automated Image Deployment Flow</p>
+            </div>
+
+        </section>
+
+        <section class="section" id="pipeline">
+
+            <div class="section-heading">
+                <div class="label">How it works</div>
+                <h2>Our CI/CD Pipeline</h2>
+                <p>One code push. Multiple automated stages. One live application.</p>
+            </div>
+
+            <div class="pipeline">
+
+                <div class="pipeline-card">
+                    <div class="pipeline-icon">⌘</div>
+                    <h3>GitHub</h3>
+                    <p>Developer pushes updated application code.</p>
+                </div>
+
+                <div class="pipeline-card">
+                    <div class="pipeline-icon">⚙</div>
+                    <h3>GitHub Actions</h3>
+                    <p>Automatically starts the CI/CD workflow.</p>
+                </div>
+
+                <div class="pipeline-card">
+                    <div class="pipeline-icon">🐳</div>
+                    <h3>Docker & ECR</h3>
+                    <p>Builds and uploads a new container image.</p>
+                </div>
+
+                <div class="pipeline-card">
+                    <div class="pipeline-icon">☸</div>
+                    <h3>Amazon EKS</h3>
+                    <p>Updates the Kubernetes application deployment.</p>
+                </div>
+
+                <div class="pipeline-card">
+                    <div class="pipeline-icon">🌐</div>
+                    <h3>Live Website</h3>
+                    <p>Users access the updated application.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="section" id="technologies">
+
+            <div class="section-heading">
+                <div class="label">Technology stack</div>
+                <h2>Powered by Modern DevOps</h2>
+                <p>Tools and services working together to automate deployment.</p>
+            </div>
+
+            <div class="tech-grid">
+
+                <div class="tech-card">
+                    <div class="tech-icon">🐙</div>
+                    <h3>GitHub</h3>
+                    <p>Version control and centralized application source code.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">⚡</div>
+                    <h3>GitHub Actions</h3>
+                    <p>Automated workflow for building and deploying applications.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">🐳</div>
+                    <h3>Docker</h3>
+                    <p>Containerization for consistent application environments.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">📦</div>
+                    <h3>Amazon ECR</h3>
+                    <p>Secure storage for Docker container images.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">☸️</div>
+                    <h3>Kubernetes</h3>
+                    <p>Container orchestration and application management.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">☁️</div>
+                    <h3>Amazon EKS</h3>
+                    <p>Managed Kubernetes service running our application.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">🔐</div>
+                    <h3>AWS IAM & OIDC</h3>
+                    <p>Secure authentication between GitHub and AWS.</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-icon">🏗️</div>
+                    <h3>Terraform</h3>
+                    <p>Infrastructure as Code for repeatable cloud resources.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+        <footer>
+            <div class="footer-content">
+                <div>© 2026 <span>CloudFlow.</span> Built with DevOps.</div>
+                <div>Powered by GitHub Actions + AWS EKS</div>
+            </div>
+        </footer>
+
     </div>
+
 </body>
 </html>
-<!-- CI/CD workflow trigger test -->
